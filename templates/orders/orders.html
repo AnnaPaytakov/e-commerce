@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Orders</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    h1 {
+      margin-bottom: 1.5rem;
+    }
+    .order {
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background-color: #1e1e1e;
+    }
+    .order p {
+      margin: 0.5rem 0;
+    }
+    .item {
+      margin-left: 1.5rem;
+    }
+    .accept-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #28a745;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .accept-btn:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>All Orders (Real-time)</h1>
+  <div id="orders"></div>
+
+  <script>
+    const ordersContainer = document.getElementById('orders');
+const socket = new WebSocket(
+  (window.location.protocol === 'https:' ? 'wss' : 'ws') + '://' + window.location.host + '/ws/orders/'
+);
+
+socket.onopen = function() {
+  console.log('WebSocket соединение установлено');
+};
+
+socket.onmessage = function(event) {
+  console.log('Получено сообщение:', event.data);
+  try {
+    const data = JSON.parse(event.data);
+    console.log('Данные:', data);
+    const order = data.order;
+
+    const userDisplay = order.user || 'Неизвестный пользователь';
+    const createdAt = new Date(order.created_at);
+    const formattedDate = createdAt.toLocaleString();
+
+    const div = document.createElement('div');
+    div.classList.add('order');
+
+    div.innerHTML = `
+      <p><strong>Order #${order.id}</strong> by <em>${userDisplay}</em></p>
+      <p><strong>Created at:</strong> ${formattedDate}</p>
+      <p><strong>Items:</strong></p>
+      <ul>
+        ${order.items.map(item => `<li class="item">${item.quantity} x ${item.product_name}</li>`).join('')}
+      </ul>
+      <button class="accept-btn">Принять заказ</button>
+    `;
+
+    const button = div.querySelector('.accept-btn');
+    button.addEventListener('click', () => {
+      button.textContent = 'Принято';
+      button.disabled = true;
+    });
+
+    ordersContainer.prepend(div);
+  } catch (error) {
+    console.error('Ошибка обработки сообщения:', error);
+  }
+};
+
+socket.onerror = function(error) {
+  console.error('Ошибка WebSocket:', error);
+};
+
+socket.onclose = function() {
+  console.log('WebSocket закрыт');
+};
+  </script>
+
+</body>
+</html>
