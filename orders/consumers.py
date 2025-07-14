@@ -13,7 +13,6 @@ class OrderConsumer(AsyncWebsocketConsumer, OrderHandlerMixin):
         logger.info(f"WebSocket connect attempt: {self.channel_name}")
         print(f"Consumer: WebSocket connect attempt: {self.channel_name}")
         
-        # Получаем токен из заголовка Authorization
         headers = dict(self.scope['headers'])
         auth_header = headers.get(b'authorization', b'').decode()
         token_key = None
@@ -26,7 +25,7 @@ class OrderConsumer(AsyncWebsocketConsumer, OrderHandlerMixin):
         
         if user is None or user.is_anonymous:
             logger.warning("Invalid or missing token, closing connection")
-            await self.close(code=4001)  # Код для невалидной авторизации
+            await self.close(code=4001) 
             return
         
         self.scope['user'] = user

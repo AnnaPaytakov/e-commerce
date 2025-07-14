@@ -17,4 +17,4 @@ client api:
 
 
 list products from redis cache	
-update redis cache on CRUD actions	
+update redis cache on CRUD actions

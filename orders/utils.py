@@ -7,10 +7,9 @@ from asgiref.sync import async_to_sync
 logger = logging.getLogger(__name__)
 
 class OrderHandlerMixin:
-    """Миксин для обработки заказов через WebSocket"""
     
+    # Creatting an order with a product and sending it via WebSocket
     def create_order(self, user, data):
-        """Создание заказа из WebSocket-данных"""
         logger.info("=== START CREATE ORDER ===")
         logger.info(f"User: {user}")
         
@@ -22,7 +21,7 @@ class OrderHandlerMixin:
                 logger.error("Invalid order data: name or price missing/invalid")
                 return None, "Invalid order data"
             
-            # Создаем продукт
+            # create product
             product = Product.objects.create(
                 name=name,
                 price=price,
@@ -30,15 +29,15 @@ class OrderHandlerMixin:
             )
             logger.info(f"Created product: {product.name}")
             
-            # Создаем заказ
+            # make order
             order = Order.objects.create(user=user)
             logger.info(f"Order created with ID: {order.id}")
             
-            # Создаем элемент заказа
+            # create order item
             OrderItem.objects.create(order=order, product=product, quantity=1)
             logger.info(f"Added order item: 1x {product.name}")
             
-            # Подготавливаем данные для WebSocket
+            # Prepare order data for WebSocket
             user_identifier = f"{user.full_name} ({user.phone})"
             order_data = {
                 "id": order.id,
@@ -48,7 +47,7 @@ class OrderHandlerMixin:
             }
             logger.info(f"Order data: {order_data}")
             
-            # Отправляем через WebSocket
+            # Send order data via WebSocket
             try:
                 channel_layer = get_channel_layer()
                 if channel_layer:

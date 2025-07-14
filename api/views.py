@@ -21,17 +21,21 @@ from django.utils.decorators import method_decorator
 import logging
 from .serializers import UserListSerializer, UserCreateUpdateSerializer
 from .permissions import IsSuperUser
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import status
+from rest_framework.response import Response
+from users.models import UserSession
+from django.contrib.sessions.models import Session
+import uuid
 
 
 logger = logging.getLogger(__name__)
 
-# Регистрация нового пользователя
 class UserSignupView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = SignupSerializer
     permission_classes = [AllowAny]
 
-# Получение и обновление текущего пользователя (по токену)
 class MeView(generics.RetrieveUpdateAPIView):
     serializer_class = MeSerializer
     permission_classes = [IsAuthenticated]
@@ -39,7 +43,6 @@ class MeView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
-# Просмотр пользователей (только для админа)
 @method_decorator(never_cache, name='dispatch')
 class UserListView(generics.ListAPIView):
     serializer_class = UserListSerializer
@@ -95,21 +98,20 @@ class ProductViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
         return [AllowAny()]
 
-    @method_decorator(cache_page(60*15))  # Кэш на 15 минут
+    @method_decorator(cache_page(60*15))  # Cache for 15 minutes
     def list(self, request, *args, **kwargs):
         logger.debug("ProductViewSet.list called, checking cache")
         response = super().list(request, *args, **kwargs)
         logger.debug("ProductViewSet.list response generated")
         return response
 
-    @method_decorator(cache_page(60*15))  # Кэш на 15 минут
+    @method_decorator(cache_page(60*15))  # Cache for 15 minutes
     def retrieve(self, request, *args, **kwargs):
         logger.debug("ProductViewSet.retrieve called, checking cache")
         response = super().retrieve(request, *args, **kwargs)
         logger.debug("ProductViewSet.retrieve response generated")
         return response
 
-# Управление заказами
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -123,7 +125,6 @@ class OrderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-# Статистика продаж продуктов
 class ProductSalesStatsView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -158,19 +159,9 @@ class ProductSalesStatsView(APIView):
         serializer = ProductSalesStatsSerializer(stats, many=True)
         return Response(serializer.data)
     
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import status
-from rest_framework.response import Response
-from users.models import UserSession
-from django.contrib.sessions.models import Session
-import uuid
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         logger.info("CustomTokenObtainPairView: Starting login attempt")
-        
-        # Проверяем данные запроса
         logger.info(f"Request data: {request.data}")
         phone = request.data.get('phone')
         if not phone:
@@ -181,7 +172,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             )
         logger.info(f"Phone provided: {phone}")
 
-        # Проверяем пользователя
+        # check if user exists
         try:
             user = User.objects.get(phone=phone)
             logger.info(f"User found: {user.phone} (ID: {user.id})")
@@ -192,7 +183,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # Проверяем активную сессию
+        # check if user has active sessions
         existing_sessions = UserSession.objects.filter(user=user)
         if existing_sessions.exists():
             logger.warning(f"User {phone} already has active sessions: {existing_sessions}")
@@ -202,7 +193,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             )
         logger.info(f"No active sessions for {phone}")
 
-        # Генерируем токены
+        # generate tokens
         logger.info("Attempting to generate tokens")
         try:
             response = super().post(request, *args, **kwargs)
@@ -214,7 +205,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # Проверяем успешность логина
+        # check if response is successful
         if response.status_code == 200:
             logger.info("Login successful, creating UserSession")
             session_key = str(uuid.uuid4())

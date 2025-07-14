@@ -16,12 +16,3 @@ class ProductDetailView(DetailView):
     model = Product
     template_name = 'products/product.html'
     context_object_name = 'product'
-
-class AddToCartView(CartMixin, View):
-    def get(self, request, pk):
-        return self.add_to_cart(request, pk)
-
-class CartView(CartMixin, View):
-    def get(self, request):
-        context = self.get_cart_summary(request)
-        return render(request, 'products/cart.html', context)

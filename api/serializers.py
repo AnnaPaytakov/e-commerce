@@ -58,7 +58,7 @@ class MeSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'phone', 'full_name', 'email', 'address', 'is_superuser']
         extra_kwargs = {
-            'phone': {'read_only': True},  # Телефон нельзя менять
+            'phone': {'read_only': True},
             'id': {'read_only': True}
         }
 
