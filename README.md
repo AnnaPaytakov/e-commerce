@@ -26,3 +26,4 @@ update redis cache on CRUD actions
   	Redis
 	Websocket (Daphne server)
  	Swagger (api/swagger/)
+	Docker
