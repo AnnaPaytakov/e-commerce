@@ -1,5 +1,5 @@
 from django.urls import path, include
-from api.views import CustomTokenObtainPairView
+from users.views import CustomTokenObtainPairView
 from django.conf import settings
 from django.conf.urls.static import static
 
