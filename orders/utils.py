@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class OrderHandlerMixin:
-    # Creatting an order with a product and sending it via WebSocket
+    # Creating an order with a product and sending it via WebSocket
     def create_order(self, user, data):
         logger.info("=== START CREATE ORDER ===")
         logger.info(f"User: {user}")
