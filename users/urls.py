@@ -1,4 +1,5 @@
 from django.urls import path
+from users.views import CustomTokenObtainPairView
 from .views import (
     UserSignupView,
     MeView,
@@ -8,7 +9,6 @@ from .views import (
     UserDeleteView,
     LogoutView,
 )
-from users.views import CustomTokenObtainPairView
 
 urlpatterns = [
     path("signup/", UserSignupView.as_view(), name="signup"),
