@@ -150,7 +150,7 @@ CACHE_MIDDLEWARE_SECONDS = 60 * 15
 CACHE_MIDDLEWARE_KEY_PREFIX = "ecommerce"
 
 
-# * Redis working test
+#* Redis working test
 try:
     cache.set("test_key", "test_value", timeout=60)
     test_value = cache.get("test_key")
