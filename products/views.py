@@ -36,14 +36,14 @@ class ProductViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
         return [AllowAny()]
 
-    @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
+    @method_decorator(cache_page(60 * 15))  #! Cache for 15 minutes
     def list(self, request, *args, **kwargs):
         logger.debug("ProductViewSet.list called, checking cache")
         response = super().list(request, *args, **kwargs)
         logger.debug("ProductViewSet.list response generated")
         return response
 
-    @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
+    @method_decorator(cache_page(60 * 15))  #! Cache for 15 minutes
     def retrieve(self, request, *args, **kwargs):
         logger.debug("ProductViewSet.retrieve called, checking cache")
         response = super().retrieve(request, *args, **kwargs)

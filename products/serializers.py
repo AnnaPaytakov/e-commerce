@@ -8,7 +8,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "price", "special_price", "image_url"]
 
 
-# . statistics for analyzing products sales
+#* statistics for analyzing products sales
 class ProductSalesStatsSerializer(serializers.Serializer):
     product_id = serializers.UUIDField(source="product__id")
     product_name = serializers.CharField(source="product__name")
