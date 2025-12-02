@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class OrderHandlerMixin:
-    # Creating an order with a product and sending it via WebSocket
+    #* Creating an order with a product and sending it via WebSocket
     def create_order(self, user, data):
         logger.info("=== START CREATE ORDER ===")
         logger.info(f"User: {user}")
@@ -21,7 +21,7 @@ class OrderHandlerMixin:
                 logger.error("Invalid order data: name or price missing/invalid")
                 return None, "Invalid order data"
 
-            # create product
+            #* create product
             product = Product.objects.create(
                 name=name,
                 price=price,
@@ -31,15 +31,15 @@ class OrderHandlerMixin:
             )
             logger.info(f"Created product: {product.name}")
 
-            # make order
+            #* make order
             order = Order.objects.create(user=user)
             logger.info(f"Order created with ID: {order.id}")
 
-            # create order item
+            #* create order item
             OrderItem.objects.create(order=order, product=product, quantity=1)
             logger.info(f"Added order item: 1x {product.name}")
 
-            # Prepare order data for WebSocket
+            #* Prepare order data for WebSocket
             user_identifier = f"{user.full_name} ({user.phone})"
             order_data = {
                 "id": order.id,
@@ -49,7 +49,7 @@ class OrderHandlerMixin:
             }
             logger.info(f"Order data: {order_data}")
 
-            # Send order data via WebSocket
+            #* Send order data via WebSocket
             try:
                 channel_layer = get_channel_layer()
                 if channel_layer:
